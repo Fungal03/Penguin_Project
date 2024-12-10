@@ -1,0 +1,113 @@
+---
+title: "Penguin_Analysis"
+author: '~'
+date: "2024-12-03"
+output:
+  pdf_document: default
+  html_document: default
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Setting Up
+
+if not already installed please copy this code directly into the console : `install.packages(c(tidyverse,palmerpenguins,here,janitor,tinytex)`
+
+```{r}
+library(tidyverse)
+library(palmerpenguins)
+library(here)
+library(janitor)
+library(tinytex)
+```
+
+### QUESTION 01: Data Visualisation for Science Communication
+
+Context - What is the reproducability crisis and how is effecting the scientific community?
+
+Science aims to answer questions about the world around us and reveal truth to do this relies on the sceintific method- observations, hypotheses and experimental manipulation. Through this process of trial and error many rounds of expereiments are often undertaken, generally with limited results. But in a world of research grants and competetive sceientific journals some may argue that the core aims of science and the scientific process are lost. When over 70% of researchers have tried and failed to reproduce another scientist's experiments, and more than half have failed to reproduce their own experiments it is no wounder that questions arise surrounding the reproducibility of science and even the legitimacy of some modern scientific literature (*Baker, 2016*).
+
+a)  Figure -
+
+Create a figure using the `Palmer Penguin ()` data set that is correct but badly communicates the data.
+
+```{r}
+#Unclear Figure
+plot(
+  penguins$flipper_length_mm, 
+  penguins$body_mass_g,
+  pch = 3,  # Hard-to-read symbols
+  col = rainbow(3)[as.numeric(penguins$species)],  # Overly bright and clashing colors
+  main = "Body Mass vs. Flipper Length",  
+  xlab = "Length",  
+  ylab = "Body Mass",  
+  xlim = c(0, 300),  # Irrelevant axis range
+  ylim = c(0, 8000),  # Over-exaggerated axis range
+  cex = 5  # Overly large points
+)
+
+```
+
+b)  Write about how your design choices mislead the reader about the underlying data (100-300 words).
+
+Investigating the relationship between flipper length and body weight is a legitimate scientific question. However, how this plot visualises the data could be clearer and more accurate. In terms of graph formatting the axes labels are brief and do not show the units for example. It could be argued that the scale is also inappropriate as all the data is between 150 and 250 cm and yet the scale is from 0-300 which makes it harder to observe any differences between the penguins. This is also somewhat the case for the other axis meaning that the isn't reflective of the actual data distribution. Although different colours for the three different penguin species are theoretically useful without a key it is not possible to differentiate between them.
+
+
+### QUESTION 2: Data Pipeline
+
+Write a data analysis pipeline in your .rmd RMarkdown file. You should be aiming to write a clear explanation of the steps as well as clear code. Your code should include the steps practiced in the lab session:
+
+a) Load the data
+
+```{r}
+#shows the raw data set palmer penguins
+head(penguins_raw)
+#what are the colnames()
+colnames(penguins_raw)
+```
+
+b) Approprtiely clean the data
+
+```{r}
+#preserve the raw data 
+write_csv(penguins_raw, here("data", "penguins_raw.csv"))
+penguins_raw <- select(penguins_raw, -Comments)
+colnames(penguins_raw)
+
+#create a more refined data set
+colnames(penguins_raw)
+penguins_raw <- read_csv(here("data", "penguins_raw.csv"), show_col_types = FALSE)
+penguins_clean <- select(penguins_raw, ~Comments)
+penguins_clean <- select(penguins_clean, -starts_with("Delta"))
+colnames(penguins_clean)
+```
+
+c) Create an Exploratory Figure (not a boxplot)
+```{r}
+plot()
+```
+
+
+d) Run a statistical test
+
+e) Create a Results Figure 
+
+
+Summary 
+An exploratory figure shows raw data, such as the distribution of the data. A results figure demonstrates the stats method chosen, and includes the results of the stats test or model. Between your code, communicate clearly what you are doing and why. Your text should include:
+• Introduction 
+• Hypothesis 
+• Stats Method 
+• Results 
+• Discussion 
+• Conclusion 
+You will be marked on the following:
+a) Your code for readability and functionality 
+b) Your figures for communication 
+c) Your text communication of your analysis
+
+
+
+QUESTION 3: Open Science a) GitHub Upload your RProject you created for Question 2 and any files and subfolders used to GitHub. Do not include any identifiers such as your name. Make sure your GitHub repo is public. GitHub link: You will be marked on your repo organisation and readability. b) Share your repo with a partner, download, and try to run their data pipeline. Partner’s GitHub link: You must provide this so I can verify there is no plagiarism between you and your partner. 2 c) Reflect on your experience running their code. (300-500 words) • What elements of your partner’s code helped you to understand and run their data pipeline? • Did it run? Did you need to fix anything? • What suggestions would you make for improving their code to make it more understandable or reproducible, and why? • If you needed to alter your partner’s figure using their code, do you think that would be easy or difficult, and why? d) Reflect on your own code based on your experience with your partner’s code and their review of yours. (300-500 words) • What improvements did they suggest, and do you agree? • What did you learn about writing code for other people? e) What are the main barriers for scientists to share their data and code, and what could be done to overcome them? (500-700 words) • Maitner et al. Code sharing increases citations, but remains uncommon. <https://doi.org/10.21203/rs.3.rs3222221/v1> • Trisovic et al. A large-scale study on research code quality and execution. <https://rdcu.be/dZB7x> • A Rock-Star Researcher Spun a Web of Lies—and Nearly Got Away with It. <https://thewalrus.ca/arock-star-researcher-spun-a-web-of-lies-and-nearly-got-away-with-it/> • Gomes et al. Why don’t we share data and code? Perceived barriers and benefits to public archiving practices <https://doi.org/10.1098/rspb.2022.1113> 3
