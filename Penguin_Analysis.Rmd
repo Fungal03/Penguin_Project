@@ -1,11 +1,6 @@
----
-title: "Penguin_Analysis"
-author: '~'
-date: "2024-12-03"
-output:
-  pdf_document: default
-  html_document: default
+------------------------------------------------------------------------
 
+title: "Penguin_Analysis" author: '\~' date: "2024-12-03" output: pdf_document: default html_document: default
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -13,7 +8,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Setting Up
 
-if not already installed please copy this code directly into the console : `install.packages(c(tidyverse,palmerpenguins,here,janitor,tinytex)`
+if not already installed please copy this code directly into the console : `install.packages(c(tidyverse,palmerpenguins,here,janitor,tinytex, knitr, kableExtra)`
 
 ```{r}
 library(tidyverse)
@@ -21,19 +16,21 @@ library(palmerpenguins)
 library(here)
 library(janitor)
 library(tinytex)
+library(knitr)
+library(kableExtra)
 ```
 
 ### QUESTION 01: Data Visualisation for Science Communication
 
-Context - What is the reproducability crisis and how is effecting the scientific community?
+Context - What is the reproduceability crisis and how is effecting the scientific community?
 
-Science aims to answer questions about the world around us and reveal truth to do this relies on the sceintific method- observations, hypotheses and experimental manipulation. Through this process of trial and error many rounds of expereiments are often undertaken, generally with limited results. But in a world of research grants and competetive sceientific journals some may argue that the core aims of science and the scientific process are lost. When over 70% of researchers have tried and failed to reproduce another scientist's experiments, and more than half have failed to reproduce their own experiments it is no wounder that questions arise surrounding the reproducibility of science and even the legitimacy of some modern scientific literature (*Baker, 2016*).
+Science aims to answer questions about the world around us and reveal truth to do this relies on the scientific method- observations, hypotheses and experimental manipulation. Through this process of trial and error many rounds of experiments are often undertaken, generally with limited results. But in a world of research grants and competetive sceientific journals some may argue that the core aims of science and the scientific process are lost. When over 70% of researchers have tried and failed to reproduce another scientist's experiments, and more than half have failed to reproduce their own experiments it is no wounder that questions arise surrounding the reproducibility of science and even the legitimacy of some modern scientific literature (*Baker, 2016*).
 
 a)  Figure -
 
 Create a figure using the `Palmer Penguin ()` data set that is correct but badly communicates the data.
 
-```{r}
+```{r bad figure code, echo=FALSE}
 #Unclear Figure
 plot(
   penguins$flipper_length_mm, 
@@ -52,62 +49,130 @@ plot(
 
 b)  Write about how your design choices mislead the reader about the underlying data (100-300 words).
 
-Investigating the relationship between flipper length and body weight is a legitimate scientific question. However, how this plot visualises the data could be clearer and more accurate. In terms of graph formatting the axes labels are brief and do not show the units for example. It could be argued that the scale is also inappropriate as all the data is between 150 and 250 cm and yet the scale is from 0-300 which makes it harder to observe any differences between the penguins. This is also somewhat the case for the other axis meaning that the isn't reflective of the actual data distribution. Although different colours for the three different penguin species are theoretically useful without a key it is not possible to differentiate between them.
-
+Investigating the relationship between flipper length and body weight is a legitimate scientific question. However, how this plot visualises the data could be clearer and more accurate. In terms of graph formatting the axes labels are brief and do not show the units for example. It could be argued that the scale is also inappropriate as all the data is between 150 and 250 cm and yet the scale is from 0-300 which makes it harder to observe any differences between the penguins. This is also somewhat the case for the other axis meaning that the isn't reflective of the actual data distribution. Although different colors for the three different penguin species are theoretically useful without a key it is not possible to differentiate between them.
 
 ### QUESTION 2: Data Pipeline
 
 Write a data analysis pipeline in your .rmd RMarkdown file. You should be aiming to write a clear explanation of the steps as well as clear code. Your code should include the steps practiced in the lab session:
 
-a) Load the data
+a)  Load the data
 
 ```{r}
-#shows the raw data set palmer penguins
-head(penguins_raw)
-#what are the colnames()
-colnames(penguins_raw)
-```
+# Load the cleaning function from the script
+source(here("functions", "cleaning.R"))
 
-b) Approprtiely clean the data
+# Preserve the raw dataset by saving it
+write_csv(penguins_raw, here("data", "penguin_raw.csv"))
 
-```{r}
-#preserve the raw data 
-write_csv(penguins_raw, here("data", "penguins_raw.csv"))
-penguins_raw <- select(penguins_raw, -Comments)
-colnames(penguins_raw)
+# Clean the dataset using the function
+penguins_clean <- cleaning_penguins(penguins_raw)
 
-#create a more refined data set
-colnames(penguins_raw)
-penguins_raw <- read_csv(here("data", "penguins_raw.csv"), show_col_types = FALSE)
-penguins_clean <- select(penguins_raw, ~Comments)
-penguins_clean <- select(penguins_clean, -starts_with("Delta"))
+# Save the cleaned dataset
+write_csv(penguins_clean, here("data", "penguins_clean.csv"))
+
+# Verify changes by printing the column names
 colnames(penguins_clean)
+
+
 ```
 
-c) Create an Exploratory Figure (not a boxplot)
+c)  Create an Exploratory Figure (not a boxplot)
+
 ```{r}
-plot()
+exploratory_plot <- ggplot(
+  data = penguins_clean, 
+  aes(x = species, y = flipper_length_mm, fill = species)) +
+  geom_violin(trim = FALSE, color = "black") + 
+  geom_jitter(width = 0.2, size = 1, color = "black", alpha = 0.6) + # Add jittered points
+  labs(
+    title = "Distribution of Flipper Length by Species",
+    x = "Species",  # Keep the x-axis title
+    y = "Flipper Length (mm)"
+  ) +
+  theme_minimal() + 
+  theme(
+    axis.text.x = element_blank(),  # Remove x-axis tick labels
+    axis.ticks.x = element_blank()  # Remove x-axis tick marks (optional)
+  )
+
+# Print the plot
+
+exploratory_plot
+
+
+```
+
+d)  Run a statistical test
+
+```{r}
+# Perform ANOVA
+statistical_test <- aov(flipper_length_mm ~ species, data = penguins_clean)
+anova_summary <- summary(statistical_test)
+
+# Extract the ANOVA table
+anova_table <- as.data.frame(anova_summary[[1]])  # Convert the summary to a data frame
+# Use kable to display the table
+kable(
+  anova_table, 
+  col.names = c("Df", "Sum Sq", "Mean Sq", "F value", "Pr(>F)"),  # Customize column names
+  caption = "ANOVA Table for Flipper Length by Species", 
+  format = "html"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"), 
+    full_width = FALSE, 
+    position = "center"
+  ) %>%
+  column_spec(1, bold = TRUE) %>% 
+  row_spec(0, background = "#D3D3D3")  # Highlight header row
+
 ```
 
 
-d) Run a statistical test
+e)  Create a Results Figure
 
-e) Create a Results Figure 
+```{r}
+species_colours <- c("Adelie" = "darkorange", 
+                    "Chinstrap" = "purple", 
+                    "Gentoo" = "cyan4")
+                    
+                    
+plot_boxplot <- function(data, 
+                         x_column, 
+                         y_column, 
+                         x_label, 
+                         y_label, 
+                         colour_mapping) {
+
+ ggplot(data = data, 
+           aes(
+            x = {{ x_column }}, 
+            y = {{ y_column }}, 
+            color = {{ x_column }})) +  # Use {{ }} for x and y columns
+        geom_boxplot(
+            width = 0.3, 
+            show.legend = FALSE) +
+        geom_jitter(
+            alpha = 0.3,
+            size = 1,
+            show.legend = FALSE,
+            position = position_jitter(width = 0.2, seed = 0)) +
+        scale_color_manual(
+            values = species_colours) +  # Use color_mapping input here
+        labs(
+            x = x_label, 
+            y = y_label) +  # Use provided x and y labels
+        theme_bw()
+}
+
+plot_boxplot(penguins_clean, 
+             species, flipper_length_mm, 
+             "Species", "Flipper Length (mm)", 
+             species_colours)
+
+```
 
 
-Summary 
-An exploratory figure shows raw data, such as the distribution of the data. A results figure demonstrates the stats method chosen, and includes the results of the stats test or model. Between your code, communicate clearly what you are doing and why. Your text should include:
-• Introduction 
-• Hypothesis 
-• Stats Method 
-• Results 
-• Discussion 
-• Conclusion 
-You will be marked on the following:
-a) Your code for readability and functionality 
-b) Your figures for communication 
-c) Your text communication of your analysis
-
-
+Summary An exploratory figure shows raw data, such as the distribution of the data. A results figure demonstrates the stats method chosen, and includes the results of the stats test or model. Between your code, communicate clearly what you are doing and why. Your text should include: • Introduction • Hypothesis • Stats Method • Results • Discussion • Conclusion You will be marked on the following: a) Your code for readability and functionality b) Your figures for communication c) Your text communication of your analysis
 
 QUESTION 3: Open Science a) GitHub Upload your RProject you created for Question 2 and any files and subfolders used to GitHub. Do not include any identifiers such as your name. Make sure your GitHub repo is public. GitHub link: You will be marked on your repo organisation and readability. b) Share your repo with a partner, download, and try to run their data pipeline. Partner’s GitHub link: You must provide this so I can verify there is no plagiarism between you and your partner. 2 c) Reflect on your experience running their code. (300-500 words) • What elements of your partner’s code helped you to understand and run their data pipeline? • Did it run? Did you need to fix anything? • What suggestions would you make for improving their code to make it more understandable or reproducible, and why? • If you needed to alter your partner’s figure using their code, do you think that would be easy or difficult, and why? d) Reflect on your own code based on your experience with your partner’s code and their review of yours. (300-500 words) • What improvements did they suggest, and do you agree? • What did you learn about writing code for other people? e) What are the main barriers for scientists to share their data and code, and what could be done to overcome them? (500-700 words) • Maitner et al. Code sharing increases citations, but remains uncommon. <https://doi.org/10.21203/rs.3.rs3222221/v1> • Trisovic et al. A large-scale study on research code quality and execution. <https://rdcu.be/dZB7x> • A Rock-Star Researcher Spun a Web of Lies—and Nearly Got Away with It. <https://thewalrus.ca/arock-star-researcher-spun-a-web-of-lies-and-nearly-got-away-with-it/> • Gomes et al. Why don’t we share data and code? Perceived barriers and benefits to public archiving practices <https://doi.org/10.1098/rspb.2022.1113> 3
