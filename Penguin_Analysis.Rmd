@@ -2,33 +2,24 @@
 
 title: "Penguin_Analysis" author: '\~' date: "2024-12-03" output: pdf_document: default html_document: default
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-## Setting Up
-
-if not already installed please copy this code directly into the console : `install.packages(c(tidyverse,palmerpenguins,here,janitor,tinytex, knitr, kableExtra)`
+Setting Up- if not already installed, please copy this code directly into the console: `` install.packages(c(tidyverse,palmerpenguins,ggplot2,here,janitor,tinytex, knitr, kableExtra)` ``
 
 ```{r}
-library(tidyverse)
-library(palmerpenguins)
-library(here)
-library(janitor)
-library(tinytex)
-library(knitr)
-library(kableExtra)
+library(tidyverse) #organises data 
+library(palmerpenguins) #contains our desired data set
+library(ggplot2) #creates graphs
+library(here) #finds files
+library(janitor) #cleaning data 
+library(tinytex) #creates PDF of the Rmd
+library(knitr) #creates 
+library(kableExtra)# additional formatting for results tables
 ```
 
-### QUESTION 01: Data Visualisation for Science Communication
+### QUESTION 01: Data **Visualisation** for Science Communication
 
-Context - What is the reproduceability crisis and how is effecting the scientific community?
+a)  Poor Figure
 
-Science aims to answer questions about the world around us and reveal truth to do this relies on the scientific method- observations, hypotheses and experimental manipulation. Through this process of trial and error many rounds of experiments are often undertaken, generally with limited results. But in a world of research grants and competetive sceientific journals some may argue that the core aims of science and the scientific process are lost. When over 70% of researchers have tried and failed to reproduce another scientist's experiments, and more than half have failed to reproduce their own experiments it is no wounder that questions arise surrounding the reproducibility of science and even the legitimacy of some modern scientific literature (*Baker, 2016*).
-
-a)  Figure -
-
-Create a figure using the `Palmer Penguin ()` data set that is correct but badly communicates the data.
+Aim- Create a figure using the `Palmer Penguin ()` data set that is correct but badly communicates the data.
 
 ```{r bad figure code, echo=FALSE}
 #Unclear Figure
@@ -36,12 +27,12 @@ plot(
   penguins$flipper_length_mm, 
   penguins$body_mass_g,
   pch = 3,  # Hard-to-read symbols
-  col = rainbow(3)[as.numeric(penguins$species)],  # Overly bright and clashing colors
+  col = rainbow(3)[as.numeric(penguins$species)], 
   main = "Body Mass vs. Flipper Length",  
   xlab = "Length",  
   ylab = "Body Mass",  
-  xlim = c(0, 300),  # Irrelevant axis range
-  ylim = c(0, 8000),  # Over-exaggerated axis range
+  xlim = c(0, 300),  # large axis range
+  ylim = c(0, 8000),  # large axis range 
   cex = 5  # Overly large points
 )
 
@@ -53,7 +44,15 @@ Investigating the relationship between flipper length and body weight is a legit
 
 ### QUESTION 2: Data Pipeline
 
-Write a data analysis pipeline in your .rmd RMarkdown file. You should be aiming to write a clear explanation of the steps as well as clear code. Your code should include the steps practiced in the lab session:
+Aim - Write a data analysis pipeline in your .rmd RMarkdown file. You should be aiming to write a clear explanation of the steps as well as clear code. Your code should include the steps practiced in the lab session
+
+#### Introduction
+
+Data pipelines are used to
+
+#### Hypothesis
+
+#### Method
 
 a)  Load the data
 
@@ -65,7 +64,7 @@ source(here("functions", "cleaning.R"))
 write_csv(penguins_raw, here("data", "penguin_raw.csv"))
 
 # Clean the dataset using the function
-penguins_clean <- cleaning_penguins(penguins_raw)
+penguins_clean <- cleaning_penguins(penguins_raw) 
 
 # Save the cleaned dataset
 write_csv(penguins_clean, here("data", "penguins_clean.csv"))
@@ -76,31 +75,30 @@ colnames(penguins_clean)
 
 ```
 
-c)  Create an Exploratory Figure (not a boxplot)
+b)  Create an Exploratory Figure (not a boxplot) Aim- An exploratory figure shows raw data, such as the distribution of the data.
 
 ```{r}
-exploratory_plot <- ggplot(
-  data = penguins_clean, 
-  aes(x = species, y = flipper_length_mm, fill = species)) +
-  geom_violin(trim = FALSE, color = "black") + 
-  geom_jitter(width = 0.2, size = 1, color = "black", alpha = 0.6) + # Add jittered points
+exploratory_plot <- ggplot(penguins_clean, aes(x = body_mass_g, y = flipper_length_mm, color = species)) +
+  geom_point(alpha = 0.7, size = 3) +  # Add transparency to avoid overlapping points
   labs(
-    title = "Distribution of Flipper Length by Species",
-    x = "Species",  # Keep the x-axis title
-    y = "Flipper Length (mm)"
+    title = "Body Mass vs Flipper Length",
+    x = "Body Mass (g)",
+    y = "Flipper Length (mm)",
+    color = "Species"
   ) +
-  theme_minimal() + 
-  theme(
-    axis.text.x = element_blank(),  # Remove x-axis tick labels
-    axis.ticks.x = element_blank()  # Remove x-axis tick marks (optional)
-  )
-
-# Print the plot
-
-exploratory_plot
+  theme_minimal() +  # Use a minimal theme for a clean look
+  theme(legend.position = c(0.8, 0.2))
+ 
 
 
+
+# Display the plot
+print(exploratory_plot)
 ```
+
+Figure One- Plotting the relationship between Body mas (g) and Flipper length (mm)
+
+This shows the spread of trait values for flipper length (mm) with respect to body size. Within this I've also visualised how these vary between species. The data shows large overlap between Chinstrap and Adelie penguin species with generally smaller flipper length and then a more distinct, larger flipper in the Gentoo penguins.
 
 d)  Run a statistical test
 
@@ -111,6 +109,7 @@ anova_summary <- summary(statistical_test)
 
 # Extract the ANOVA table
 anova_table <- as.data.frame(anova_summary[[1]])  # Convert the summary to a data frame
+penguins_clean$species <- as.factor(penguins_clean$species)
 # Use kable to display the table
 kable(
   anova_table, 
@@ -128,51 +127,67 @@ kable(
 
 ```
 
+The ANOVA conducted was a one way analysis of vairance to determine if there was a significant difference between the flipper length of the 3 penguin species.
 
-e)  Create a Results Figure
+d)  Create a Results Figure Aim- A results figure demonstrates the stats method chosen, and includes the results of the stats test or model.
 
 ```{r}
-species_colours <- c("Adelie" = "darkorange", 
-                    "Chinstrap" = "purple", 
-                    "Gentoo" = "cyan4")
-                    
-                    
-plot_boxplot <- function(data, 
-                         x_column, 
-                         y_column, 
-                         x_label, 
-                         y_label, 
-                         colour_mapping) {
+Refined_Plot <- ggplot(
+  data = penguins_clean, 
+  aes(x = species, y = flipper_length_mm, fill = species)) +
+  geom_violin(trim = FALSE, color = "black") + 
+  geom_jitter(width = 0.2, size = 1, color = "black", alpha = 0.6) + # Add jittered points
+  labs(
+    title = "Distribution of Flipper Length by Species",
+    x = "Species", 
+    y = "Flipper Length (mm)"
+  ) +
+  theme_minimal() + 
+  theme(
+    axis.text.x = element_blank(),  # Remove x-axis tick labels
+    axis.ticks.x = element_blank()  # Remove x-axis tick marks
+  )
 
- ggplot(data = data, 
-           aes(
-            x = {{ x_column }}, 
-            y = {{ y_column }}, 
-            color = {{ x_column }})) +  # Use {{ }} for x and y columns
-        geom_boxplot(
-            width = 0.3, 
-            show.legend = FALSE) +
-        geom_jitter(
-            alpha = 0.3,
-            size = 1,
-            show.legend = FALSE,
-            position = position_jitter(width = 0.2, seed = 0)) +
-        scale_color_manual(
-            values = species_colours) +  # Use color_mapping input here
-        labs(
-            x = x_label, 
-            y = y_label) +  # Use provided x and y labels
-        theme_bw()
-}
-
-plot_boxplot(penguins_clean, 
-             species, flipper_length_mm, 
-             "Species", "Flipper Length (mm)", 
-             species_colours)
-
+# Print the plot
+Refined_Plot
 ```
 
+Figure Two - Plotting the flipper length (mm) of the penguin species
 
-Summary An exploratory figure shows raw data, such as the distribution of the data. A results figure demonstrates the stats method chosen, and includes the results of the stats test or model. Between your code, communicate clearly what you are doing and why. Your text should include: • Introduction • Hypothesis • Stats Method • Results • Discussion • Conclusion You will be marked on the following: a) Your code for readability and functionality b) Your figures for communication c) Your text communication of your analysis
+This aims to show how the trait values (flipper length) vary in a species specific way.
 
-QUESTION 3: Open Science a) GitHub Upload your RProject you created for Question 2 and any files and subfolders used to GitHub. Do not include any identifiers such as your name. Make sure your GitHub repo is public. GitHub link: You will be marked on your repo organisation and readability. b) Share your repo with a partner, download, and try to run their data pipeline. Partner’s GitHub link: You must provide this so I can verify there is no plagiarism between you and your partner. 2 c) Reflect on your experience running their code. (300-500 words) • What elements of your partner’s code helped you to understand and run their data pipeline? • Did it run? Did you need to fix anything? • What suggestions would you make for improving their code to make it more understandable or reproducible, and why? • If you needed to alter your partner’s figure using their code, do you think that would be easy or difficult, and why? d) Reflect on your own code based on your experience with your partner’s code and their review of yours. (300-500 words) • What improvements did they suggest, and do you agree? • What did you learn about writing code for other people? e) What are the main barriers for scientists to share their data and code, and what could be done to overcome them? (500-700 words) • Maitner et al. Code sharing increases citations, but remains uncommon. <https://doi.org/10.21203/rs.3.rs3222221/v1> • Trisovic et al. A large-scale study on research code quality and execution. <https://rdcu.be/dZB7x> • A Rock-Star Researcher Spun a Web of Lies—and Nearly Got Away with It. <https://thewalrus.ca/arock-star-researcher-spun-a-web-of-lies-and-nearly-got-away-with-it/> • Gomes et al. Why don’t we share data and code? Perceived barriers and benefits to public archiving practices <https://doi.org/10.1098/rspb.2022.1113> 3
+### QUESTION 3: Open Science
+
+[GitHub Upload your R-Project you created for Question 2]{.underline}
+
+My Github repository:<https://github.com/Fungal03/Penguin_Project/blob/main/Penguin_Analysis.Rmd>
+
+[Share your repo with a partner, download, and try to run their data pipeline. Partner’s GitHub link]{.underline}
+
+My partners Github repository:[https://github.com/dinosaur84/ReproducibleScienceAndFigures/blob/main/ReproducibleScience0AndFiguresAssignment.Rmd](https://github.com/dinosaur84/ReproducibleScienceAndFigures/blob/main/ReproducibleScienceAndFiguresAssignment.Rmd){.uri}
+
+#### a) Reflect on your experience running their code. (300-500 words)
+
+What elements of your partner’s code helped you to understand and run their data pipeline?
+
+Did it run? Did you need to fix anything?
+
+What suggestions would you make for improving their code to make it more understandable or reproducible, and why?
+
+If you needed to alter your partner’s figure using their code, do you think that would be easy or difficult, and why?
+
+#### b) Reflect on your own code based on your experience with your partner’s code and their review of yours. (300-500 words)
+
+What improvements did they suggest, and do you agree?
+
+What did you learn about writing code for other people?
+
+#### c) What are the main barriers for scientists to share their data and code, and what could be done to overcome them? (500-700 words)
+
+• Maitner et al. Code sharing increases citations, but remains uncommon. <https://doi.org/10.21203/rs.3.rs3222221/v1>
+
+• Trisovic et al. A large-scale study on research code quality and execution. <https://rdcu.be/dZB7x>
+
+• A Rock-Star Researcher Spun a Web of Lies—and Nearly Got Away with It. <https://thewalrus.ca/arock-star-researcher-spun-a-web-of-lies-and-nearly-got-away-with-it/>
+
+• Gomes et al. Why don’t we share data and code? Perceived barriers and benefits to public archiving practices <https://doi.org/10.1098/rspb.2022.1113> 3
