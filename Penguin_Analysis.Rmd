@@ -2,6 +2,8 @@
 
 title: "Penguin_Analysis" author: '\~' date: "2024-12-03" output: pdf_document: default html_document: default
 
+### Penguin Analysis Coursework
+
 Setting Up- if not already installed, please copy this code directly into the console: `` install.packages(c(tidyverse,palmerpenguins,ggplot2,here,janitor,tinytex, knitr, kableExtra)` ``
 
 ```{r}
@@ -9,7 +11,7 @@ library(tidyverse) #organises data
 library(palmerpenguins) #contains our desired data set
 library(ggplot2) #creates graphs
 library(here) #finds files
-library(janitor) #cleaning data 
+library(janitor) #cleaning data
 library(tinytex) #creates PDF of the Rmd
 library(knitr) #creates 
 library(kableExtra)# additional formatting for results tables
@@ -48,13 +50,13 @@ Aim - Write a data analysis pipeline in your .rmd RMarkdown file. You should be 
 
 #### Introduction
 
-Data pipelines are used to
-
-#### Hypothesis
+The Palmer Penguins data set is derived from an ecological survey conducted in Antarctica. This includes data on three penguin species: Adelie, Chinstrap and Gentoo. This data is widely available. In this section I will show a proper data pipeline by importing the Palmer Penguin data, preserving the raw data, cleaning and processing the data, then finally analysis and visualisation.
 
 #### Method
 
-a)  Load the data
+a)  Importing and Cleaning the data
+
+    Cleaning the data is needed to remove any missing values or unwanted columns.
 
 ```{r}
 # Load the cleaning function from the script
@@ -75,7 +77,9 @@ colnames(penguins_clean)
 
 ```
 
-b)  Create an Exploratory Figure (not a boxplot) Aim- An exploratory figure shows raw data, such as the distribution of the data.
+b)  Create an Exploratory Figure
+
+    An exploratory figure shows raw data, such as the distribution of the data to do this I selected a scatterplot to show the distribution of all the data points without manipulating the data.
 
 ```{r}
 exploratory_plot <- ggplot(penguins_clean, aes(x = body_mass_g, y = flipper_length_mm, color = species)) +
@@ -90,8 +94,6 @@ exploratory_plot <- ggplot(penguins_clean, aes(x = body_mass_g, y = flipper_leng
   theme(legend.position = c(0.8, 0.2))
  
 
-
-
 # Display the plot
 print(exploratory_plot)
 ```
@@ -100,11 +102,19 @@ Figure One- Plotting the relationship between Body mas (g) and Flipper length (m
 
 This shows the spread of trait values for flipper length (mm) with respect to body size. Within this I've also visualised how these vary between species. The data shows large overlap between Chinstrap and Adelie penguin species with generally smaller flipper length and then a more distinct, larger flipper in the Gentoo penguins.
 
-d)  Run a statistical test
+#### Hypothesis
+
+Based on the observations from the exploratory plot it seems that there are species specific trends in both flipped length and body mass. I will explore the former further to see if there are species specific trait values associated with each penguin species. In essence can we predict penguin species based on their flipper measurements?
+
+c\. Run a statistical test
+
+Part one - ANOVA
+
+The test chosen was a one-way analysis of variance (ANOVA) this aims to establish if there are statisically significant differences between the means of 3 or more inderpendent groups (species) based on a single factor (flipper length mm).
 
 ```{r}
 # Perform ANOVA
-statistical_test <- aov(flipper_length_mm ~ species, data = penguins_clean)
+anova_test <- aov(flipper_length_mm ~ species, data = penguins_clean)
 anova_summary <- summary(statistical_test)
 
 # Extract the ANOVA table
@@ -127,9 +137,25 @@ kable(
 
 ```
 
-The ANOVA conducted was a one way analysis of vairance to determine if there was a significant difference between the flipper length of the 3 penguin species.
+[ANOVA Table-]{.underline}
 
-d)  Create a Results Figure Aim- A results figure demonstrates the stats method chosen, and includes the results of the stats test or model.
+There is a statistically significant difference between mean flipper length of the 3 species. The large F-value and the large residual variance suggests that the species factor explains the majority of variablity in flipper length. Since the ANOVA suggests a significant difference between species performing an additional test such as Tukey's HSD could provide further insight .
+
+Part Two - Tukey's HSD test
+
+Tukey's honestly significant difference test is a post- hoc test used to compare all species values while controlling for type one error (Witlock & Schluter, 2020).
+
+```{r}
+
+tukey_result <- TukeyHSD(penguins_aov)
+print(tukey_result)
+```
+
+The output shows that all pairwise comparisons are statically significant meaning that the mean flipper lengths are species specific in all 3 penguins.
+
+d)  Create a Results Figure
+
+    The figure aims to demonstrate how the findings from the ANOVA apply to the Palmer Penguins data set
 
 ```{r}
 Refined_Plot <- ggplot(
@@ -154,40 +180,88 @@ Refined_Plot
 
 Figure Two - Plotting the flipper length (mm) of the penguin species
 
-This aims to show how the trait values (flipper length) vary in a species specific way.
+This aims to show how the trait values (flipper length) vary in a species specific way. From this we can see that Adelie and Chinstrap penguins have similar flipper lengths however Gentoo penguins are larger.
+
+### Conclusion:
+
+In summary analysis of flipper length as a predictor of species in Adelie, Chinstrap and Gentoo penguins has show that each speceis has a unique range of trait values. It was also observed that Gentoo penguins have consistently larger flippers than the other two species whose trait values overlap. These findings are a good observational baseline and could be improved with future research to see if this trait is the the most appropriate as a predictor of species. The use of flipper length would be convenient as it can be estimated in person, in photos and even from animal remains.
+
+This analysis only looked at the relationship between flipper length and species and did not compare against other traits which may be more robust predictors such as bill size. In future research it may also be beneficial to start to examine the underlying forces behind these species specific differences. For example, if larger flippers are associated with deeper diving birds/species and if this is a source of niche differentiation. In conclusion, flipper length was found to be a species- specific trait across the penguin species. This observation could be used in the future as an identifying trait especially in remote studies or when identifying penguin remains where other traits such as plumage cannot be used.
 
 ### QUESTION 3: Open Science
 
-[GitHub Upload your R-Project you created for Question 2]{.underline}
-
-My Github repository:<https://github.com/Fungal03/Penguin_Project/blob/main/Penguin_Analysis.Rmd>
-
-[Share your repo with a partner, download, and try to run their data pipeline. Partner’s GitHub link]{.underline}
+#### a) Reflect on your experience running their code. (300-500 words)
 
 My partners Github repository:[https://github.com/dinosaur84/ReproducibleScienceAndFigures/blob/main/ReproducibleScience0AndFiguresAssignment.Rmd](https://github.com/dinosaur84/ReproducibleScienceAndFigures/blob/main/ReproducibleScienceAndFiguresAssignment.Rmd){.uri}
 
-#### a) Reflect on your experience running their code. (300-500 words)
+What elements of your partner's code helped you to understand and run their data pipeline?
 
-What elements of your partner’s code helped you to understand and run their data pipeline?
+The code had a well-defined structure and most of the code was annotated to allow the user to understand why each step was taken. The plots visualised the data well and were appropriate for their question. The in-depth discussions that were added alongside the code also help the user feel well-informed about the research process and give much-needed context. Each of the steps flowed well into the next thanks to the code’s thoughtful organisation which made it very clear and user-friendly. 
 
 Did it run? Did you need to fix anything?
 
+The pipeline ran smoothly and did not need adjusting to produce the desired outputs. 
+
 What suggestions would you make for improving their code to make it more understandable or reproducible, and why?
 
-If you needed to alter your partner’s figure using their code, do you think that would be easy or difficult, and why?
+-   Although the use of diagnostic plots complements the statistical methods how these plots inform the conclusion has yet to be discussed in detail. It needed to be established how the plots inform the suitability of the data for a linear model. This could lead to confusion if this method was applied to a different dataset. To improve this a short discussion regarding expected versus observed outcomes may improve the understanding of the reader and therefore improve the reproducibility 
+
+-   When loading the packages, not all of their functions are annotated. This can aid reproducibility, especially if the packages are being used for a specific function, such as ggplot, which is needed to produce graphical figures. 
+
+If you needed to alter your partner's figure using their code, do you think that would be easy or difficult, and why?
+
+-   Yes since all of the steps are laid out logically and annotated it is easy to modify the code. 
+
+-   The only difficulty may be in ensuring all the functions stored externally are also present however these were made freely available on the Github repository\
 
 #### b) Reflect on your own code based on your experience with your partner’s code and their review of yours. (300-500 words)
 
-What improvements did they suggest, and do you agree?
+[What improvements did they suggest, and do you agree?]{.underline}
 
-What did you learn about writing code for other people?
+[Comment one -]{.underline} *They could have used a pipeline for the data cleaning process instead of a series of separate functions. This would help make the code more efficient and easier to understand by combining each of the functions used to clean the data.*
+
+[Comment two-]{.underline} *To improve the reproducibility of their code, my partner could have used renv to create a reproducible environment and enable the project library to be restored from a lock file. This is helpful for reproducibility because it goes beyond simply providing package names (though this is very helpful) but it goes further and records the exact versions of packages used and installs the versions used in the original analysis. Given that packages are frequently updated and sometimes updates may affect functionality, this is important because without using the same version of a package, our ability to replicate the analysis could be impaired.*
+
+My partners comments gave useful insight into how functional may code is an valuable improvements for the future. Improving my familiarity with pipelines would help to streamline my code and prevent over writing. I also appreciate the suggestion to use renv as rstudio packages do update regularly and this way I can ensure that the code runs identically each time.
+
+[What did you learn about writing code for other people?]{.underline}
+
+While creating code for others and after experiencing using my partners code here are my key take-aways that I will apply to future projects:
+
+-   Create small modular code that can be swapped out if functions become obsolete in the future.
+
+-   Use annotations when necessary to explain the process and what each function is contributing to the code.
+
+-   Use consistent formatting to allow the user to navigate the code more easily.
+
+-   Utilise descriptive variable and function names to aid in understanding.
 
 #### c) What are the main barriers for scientists to share their data and code, and what could be done to overcome them? (500-700 words)
 
-• Maitner et al. Code sharing increases citations, but remains uncommon. <https://doi.org/10.21203/rs.3.rs3222221/v1>
+The reproducibility crisis is an increasing threat to the scientific community. This refers to the phenomenon of research being increasingly difficult to reproduce. When over 70% of researchers have tried and failed to reproduce another scientist's experiments, and more than half have failed to reproduce their own experiments it is no wonder that questions arise surrounding the reproducibility of science and even the legitimacy of some modern scientific literature (Baker, 2016). One simple solution is to make sharing code more common practice. This would allow full transparency of the scientific method and mean that other researchers can simply and accurately replicate the study. 
 
-• Trisovic et al. A large-scale study on research code quality and execution. <https://rdcu.be/dZB7x>
+However, this practice is not mainstream and is met with resistance by many. Specifically, the issues that have arisen due to a lack of standardisation, fear of research being taken and published by peers, and lack of incentives on the part of research institutions and journals have all contributed to this lack of reproducibility in the community. 
 
-• A Rock-Star Researcher Spun a Web of Lies—and Nearly Got Away with It. <https://thewalrus.ca/arock-star-researcher-spun-a-web-of-lies-and-nearly-got-away-with-it/>
+To overcome the reproducibility crisis the culture and legislature need to change making the practice of collaboration and data sharing commonplace. 
 
-• Gomes et al. Why don’t we share data and code? Perceived barriers and benefits to public archiving practices <https://doi.org/10.1098/rspb.2022.1113> 3
+1.  This would require additional training in coding best practices 
+
+2.  Create a culture that removes the fear of criticism from peers and encourages free discourse between researchers
+
+3.   Feeding into this are technical errors that currently exist for example code can be written for the researcher and not necessarily easy to follow for external parties. 
+
+4.  Removing fear surrounding sharing incomplete work and the potential for theft of “academic property” is of particular concern in ongoing or unpublished research projects. 
+
+5.  Consistent funding incentives on the part of research institutions and journals to apply pressure on researchers to produce fully reproducible research is inconsistent.
+
+6.  Invest in repositories like GitHub are easy to use and make the data globally accessible 
+
+A real-world example of how reproducible research can improve scientific knowledge for the public good is the Human Genome Project. The Human Genome Project (1990-2003) can illustrate the merits of reproducibility in science. The data produced can be accessed by all. Throughout the development researchers globally shared their work between institutions. There was a fully standardised methodology. This all led to a fully reproducible body of research that is still being used over 20 years later. 
+
+In summary data and code sharing is crucial for advancing science on a global scale. The need to move away from an individualistic to a collaborative approach is needed to ensure that scientific research is robust and can be more easily applied. To ensure that this becomes a reality we need reproducibility to become a key component of academic research. This can be put into practice by collective incentives from researchers, institutions and scientific journals.
+
+### References:
+
+-   Baker, M. (2016) Muddled meanings hamper efforts to fix reproducibility crisis. *Nature (London)*. [Online]
+
+-   Whitlock, M. & Schluter, D. (2020) *The analysis of biological data*. Third edition. New York: Macmillan International Higher Education.
